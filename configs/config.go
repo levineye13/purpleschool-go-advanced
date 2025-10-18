@@ -10,8 +10,13 @@ type DbConfig struct {
 	Dsn string
 }
 
+type AuthConfig struct {
+	Secret string
+}
+
 type Config struct {
-	Db DbConfig
+	Db   DbConfig
+	Auth AuthConfig
 }
 
 func LoadConfig() (*Config, error) {
@@ -24,6 +29,9 @@ func LoadConfig() (*Config, error) {
 	return &Config{
 		Db: DbConfig{
 			Dsn: os.Getenv("DSN"),
+		},
+		Auth: AuthConfig{
+			Secret: os.Getenv("SECRET"),
 		},
 	}, nil
 }
