@@ -1,0 +1,37 @@
+name: purpleschool
+
+services:
+  postgres:
+    container_name: postgres
+    image: postgres:16.4
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PGDATA: /data/postgres
+    volumes:
+      - ./data/postgres-data:/data/postgres
+    networks:
+      - net
+    restart: unless-stopped
+
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+    ports:
+      - '5500:80'
+    volumes:
+      - ./data/pgadmin-data:/var/lib/pgadmin/
+    depends_on:
+      - postgres
+    networks:
+      - net
+    restart: unless-stopped
+
+networks:
+  net:
+    driver: bridge
