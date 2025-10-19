@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"purpleschool-go/advanced/configs"
 	"purpleschool-go/advanced/internal/auth"
+	"purpleschool-go/advanced/pkg/db"
 )
 
 func main() {
@@ -13,6 +14,8 @@ func main() {
 	if err != nil {
 		fmt.Println(err.Error())
 	}
+
+	_ = db.NewDb(config)
 
 	router := http.NewServeMux()
 
