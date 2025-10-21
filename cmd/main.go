@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"purpleschool-go/advanced/configs"
 	"purpleschool-go/advanced/internal/auth"
+	"purpleschool-go/advanced/internal/link"
 	"purpleschool-go/advanced/pkg/db"
 )
 
@@ -22,6 +23,8 @@ func main() {
 	auth.NewAuthHandler(router, auth.AuthHandlerDeps{
 		Config: config,
 	})
+
+	link.NewLinkHandler(router, link.LinkHandlerDeps{})
 
 	server := http.Server{
 		Addr:    "localhost:8081",
