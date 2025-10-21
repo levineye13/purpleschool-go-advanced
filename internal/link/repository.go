@@ -6,9 +6,12 @@ type LinkRepository struct {
 	db *db.Db
 }
 
-type LinkRepositoryDeps struct {
+func NewLinkRepository(db *db.Db) *LinkRepository {
+	return &LinkRepository{
+		db: db,
+	}
 }
 
-func NewLinkRepository(deps LinkRepositoryDeps) {
-	return &LinkRepository{}
+func (repo *LinkRepository) Create(link *Link) {
+	repo.db.Create(link)
 }

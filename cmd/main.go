@@ -16,7 +16,9 @@ func main() {
 		fmt.Println(err.Error())
 	}
 
-	_ = db.NewDb(config)
+	db := db.NewDb(config)
+
+	linkRepository := link.NewLinkRepository(db)
 
 	router := http.NewServeMux()
 
@@ -24,7 +26,9 @@ func main() {
 		Config: config,
 	})
 
-	link.NewLinkHandler(router, link.LinkHandlerDeps{})
+	link.NewLinkHandler(router, link.LinkHandlerDeps{
+		Repo: linkRepository,
+	})
 
 	server := http.Server{
 		Addr:    "localhost:8081",

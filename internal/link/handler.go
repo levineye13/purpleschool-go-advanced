@@ -7,15 +7,18 @@ import (
 )
 
 type LinkHandlerDeps struct {
+	Repo *LinkRepository
 }
 
 type LinkHandler struct {
 	baseUrl string
+	Repo    *LinkRepository
 }
 
 func NewLinkHandler(router *http.ServeMux, deps LinkHandlerDeps) {
 	linkHandler := &LinkHandler{
 		baseUrl: "/links",
+		Repo:    deps.Repo,
 	}
 
 	router.HandleFunc("GET "+linkHandler.baseUrl, linkHandler.GetAll())
