@@ -45,10 +45,17 @@ func (handler *LinkHandler) Create() http.HandlerFunc {
 		body, err := req.HandleBody[LinkCreateRequest](rw, request)
 
 		if err != nil {
-			res.Json(rw, 400, err.Error())
+			return
 		}
 
-		res.Json(rw, 201, body)
+		link := NewLink(body.Url)
+		createdLink, err := handler.Repo.Create(link)
+
+		if err != nil {
+			http.Error(rw, err.Error(), http.StatusBadRequest)
+		}
+
+		res.Json(rw, 201, createdLink)
 	}
 }
 
@@ -57,7 +64,7 @@ func (handler *LinkHandler) Update() http.HandlerFunc {
 		body, err := req.HandleBody[LinkUpdateRequest](rw, request)
 
 		if err != nil {
-			res.Json(rw, 400, err.Error())
+			return
 		}
 
 		res.Json(rw, 200, body)
