@@ -24,9 +24,16 @@ func generateHash(length int) string {
 	return string(hash)
 }
 
+func (link *Link) GenerateHash() {
+	link.Hash = generateHash(6)
+}
+
 func NewLink(url string) *Link {
-	return &Link{
-		Url:  url,
-		Hash: generateHash(6),
+	link := &Link{
+		Url: url,
 	}
+
+	link.Hash = generateHash(6)
+
+	return link
 }

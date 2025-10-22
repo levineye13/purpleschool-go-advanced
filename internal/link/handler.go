@@ -70,6 +70,17 @@ func (handler *LinkHandler) Create() http.HandlerFunc {
 		}
 
 		link := NewLink(body.Url)
+
+		for {
+			existedLink, _ := handler.Repo.GetByHash(link.Hash)
+
+			if existedLink == nil {
+				break
+			}
+
+			link.GenerateHash()
+		}
+
 		createdLink, err := handler.Repo.Create(link)
 
 		if err != nil {
