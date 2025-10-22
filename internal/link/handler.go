@@ -22,7 +22,7 @@ func NewLinkHandler(router *http.ServeMux, deps LinkHandlerDeps) {
 	}
 
 	router.HandleFunc("GET "+linkHandler.baseUrl, linkHandler.GetAll())
-	router.HandleFunc("GET "+"/{alias}", linkHandler.GoTo())
+	router.HandleFunc("GET "+linkHandler.baseUrl+"/{hash}", linkHandler.GoTo())
 	router.HandleFunc("POST "+linkHandler.baseUrl, linkHandler.Create())
 	router.HandleFunc("PATCH "+linkHandler.baseUrl, linkHandler.Update())
 	router.HandleFunc("DELETE "+linkHandler.baseUrl+"/{id}", linkHandler.Delete())
@@ -30,13 +30,34 @@ func NewLinkHandler(router *http.ServeMux, deps LinkHandlerDeps) {
 
 func (handler *LinkHandler) GetAll() http.HandlerFunc {
 	return func(rw http.ResponseWriter, req *http.Request) {
-		res.Json(rw, 200, []any{})
+		links, err := handler.Repo.GetAll()
+
+		if err != nil {
+			http.Error(rw, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		res.Json(rw, 200, links)
 	}
 }
 
 func (handler *LinkHandler) GoTo() http.HandlerFunc {
 	return func(rw http.ResponseWriter, req *http.Request) {
-		res.Json(rw, 200, []any{})
+		hash := req.PathValue("hash")
+
+		if len(hash) == 0 {
+			http.Error(rw, "Invalid hash", http.StatusBadRequest)
+			return
+		}
+
+		link, err := handler.Repo.GetByHash(hash)
+
+		if err != nil {
+			http.Error(rw, err.Error(), http.StatusNotFound)
+			return
+		}
+
+		http.Redirect(rw, req, link.Url, http.StatusTemporaryRedirect)
 	}
 }
 
@@ -53,6 +74,7 @@ func (handler *LinkHandler) Create() http.HandlerFunc {
 
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusBadRequest)
+			return
 		}
 
 		res.Json(rw, 201, createdLink)
