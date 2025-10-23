@@ -1,9 +1,13 @@
 package link
 
 import (
+	"errors"
 	"net/http"
 	"purpleschool-go/advanced/pkg/req"
 	"purpleschool-go/advanced/pkg/res"
+	"strconv"
+
+	"gorm.io/gorm"
 )
 
 type LinkHandlerDeps struct {
@@ -24,7 +28,7 @@ func NewLinkHandler(router *http.ServeMux, deps LinkHandlerDeps) {
 	router.HandleFunc("GET "+linkHandler.baseUrl, linkHandler.GetAll())
 	router.HandleFunc("GET "+linkHandler.baseUrl+"/{hash}", linkHandler.GoTo())
 	router.HandleFunc("POST "+linkHandler.baseUrl, linkHandler.Create())
-	router.HandleFunc("PATCH "+linkHandler.baseUrl, linkHandler.Update())
+	router.HandleFunc("PATCH "+linkHandler.baseUrl+"/{id}", linkHandler.Update())
 	router.HandleFunc("DELETE "+linkHandler.baseUrl+"/{id}", linkHandler.Delete())
 }
 
@@ -100,16 +104,55 @@ func (handler *LinkHandler) Update() http.HandlerFunc {
 			return
 		}
 
-		res.Json(rw, 200, body)
+		idString := request.PathValue("id")
+
+		id, err := strconv.ParseUint(idString, 10, 32)
+
+		if err != nil {
+			http.Error(rw, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		updatedLink, err := handler.Repo.Update(&Link{
+			Model: gorm.Model{
+				ID: uint(id),
+			},
+			Url:  body.Url,
+			Hash: body.Hash,
+		})
+
+		if err != nil {
+			http.Error(rw, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		res.Json(rw, 200, updatedLink)
 	}
 }
 
 func (handler *LinkHandler) Delete() http.HandlerFunc {
 	return func(rw http.ResponseWriter, request *http.Request) {
-		id := request.PathValue("id")
+		idString := request.PathValue("id")
 
-		if id == "" {
+		id, err := strconv.ParseUint(idString, 10, 32)
+
+		if err != nil {
+			http.Error(rw, err.Error(), http.StatusBadRequest)
+			return
 		}
 
+		err = handler.Repo.Delete(uint(id))
+
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				http.Error(rw, err.Error(), http.StatusNotFound)
+				return
+			}
+
+			http.Error(rw, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		res.Json(rw, 200, nil)
 	}
 }

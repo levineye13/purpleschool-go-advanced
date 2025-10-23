@@ -6,4 +6,5 @@ type LinkCreateRequest struct {
 
 type LinkUpdateRequest struct {
 	LinkCreateRequest
+	Hash string `json:"hash"`
 }
