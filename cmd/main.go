@@ -6,6 +6,7 @@ import (
 	"purpleschool-go/advanced/configs"
 	"purpleschool-go/advanced/internal/auth"
 	"purpleschool-go/advanced/internal/link"
+	"purpleschool-go/advanced/middleware"
 	"purpleschool-go/advanced/pkg/db"
 )
 
@@ -30,9 +31,14 @@ func main() {
 		Repo: linkRepository,
 	})
 
+	middlewares := middleware.Chain(
+		middleware.Cors,
+		middleware.Logger,
+	)
+
 	server := http.Server{
 		Addr:    "localhost:8081",
-		Handler: router,
+		Handler: middlewares(router),
 	}
 
 	err = server.ListenAndServe()
