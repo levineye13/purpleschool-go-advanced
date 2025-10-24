@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"purpleschool-go/advanced/pkg/req"
 	"purpleschool-go/advanced/pkg/res"
-	"strconv"
 
 	"gorm.io/gorm"
 )
@@ -104,9 +103,7 @@ func (handler *LinkHandler) Update() http.HandlerFunc {
 			return
 		}
 
-		idString := request.PathValue("id")
-
-		id, err := strconv.ParseUint(idString, 10, 32)
+		id, err := req.ParamToUint(request, "id")
 
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusBadRequest)
@@ -115,7 +112,7 @@ func (handler *LinkHandler) Update() http.HandlerFunc {
 
 		updatedLink, err := handler.Repo.Update(&Link{
 			Model: gorm.Model{
-				ID: uint(id),
+				ID: *id,
 			},
 			Url:  body.Url,
 			Hash: body.Hash,
@@ -132,16 +129,14 @@ func (handler *LinkHandler) Update() http.HandlerFunc {
 
 func (handler *LinkHandler) Delete() http.HandlerFunc {
 	return func(rw http.ResponseWriter, request *http.Request) {
-		idString := request.PathValue("id")
-
-		id, err := strconv.ParseUint(idString, 10, 32)
+		id, err := req.ParamToUint(request, "id")
 
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		err = handler.Repo.Delete(uint(id))
+		err = handler.Repo.Delete(*id)
 
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
