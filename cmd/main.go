@@ -6,6 +6,7 @@ import (
 	"purpleschool-go/advanced/configs"
 	"purpleschool-go/advanced/internal/auth"
 	"purpleschool-go/advanced/internal/link"
+	"purpleschool-go/advanced/internal/user"
 	"purpleschool-go/advanced/middleware"
 	"purpleschool-go/advanced/pkg/db"
 )
@@ -20,16 +21,24 @@ func main() {
 	db := db.NewDb(config)
 
 	linkRepository := link.NewLinkRepository(db)
+	userRepository := user.NewUserRepository(db)
+
+	authService := auth.NewAuthService(userRepository)
 
 	router := http.NewServeMux()
 
 	auth.NewAuthHandler(router, auth.AuthHandlerDeps{
-		Config: config,
+		Config:      config,
+		AuthService: authService,
 	})
 
 	link.NewLinkHandler(router, link.LinkHandlerDeps{
 		Repo: linkRepository,
 	})
+
+	// 	user.NewLinkHandler(router, link.LinkHandlerDeps{
+	// 	Repo: userRepository,
+	// })
 
 	middlewares := middleware.Chain(
 		middleware.Cors,
