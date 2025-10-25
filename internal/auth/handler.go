@@ -33,14 +33,14 @@ func (handler *AuthHandler) Register() http.HandlerFunc {
 		body, err := req.HandleBody[TRegisterRequest](rw, request)
 
 		if err != nil {
-			res.Json(rw, 400, err.Error())
+			res.Json(rw, http.StatusUnauthorized, err.Error())
 			return
 		}
 
 		userEmail, err := handler.AuthService.Register(body.Email, body.Name, body.Password)
 
 		if err != nil {
-			res.Json(rw, 400, err.Error())
+			res.Json(rw, http.StatusUnauthorized, err.Error())
 			return
 		}
 
@@ -53,10 +53,17 @@ func (handler *AuthHandler) Login() http.HandlerFunc {
 		body, err := req.HandleBody[TLoginRequest](rw, request)
 
 		if err != nil {
-			res.Json(rw, 400, err.Error())
+			res.Json(rw, http.StatusUnauthorized, err.Error())
 			return
 		}
 
-		res.Json(rw, 200, body)
+		userEmail, err := handler.AuthService.Login(body.Email, body.Password)
+
+		if err != nil {
+			res.Json(rw, http.StatusUnauthorized, err.Error())
+			return
+		}
+
+		res.Json(rw, 200, userEmail)
 	}
 }
