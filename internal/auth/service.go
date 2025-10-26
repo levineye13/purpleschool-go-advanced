@@ -3,17 +3,20 @@ package auth
 import (
 	"errors"
 	"purpleschool-go/advanced/internal/user"
+	"purpleschool-go/advanced/pkg/jwt"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
 type AuthService struct {
 	UserRepository *user.UserRepository
+	Jwt            *jwt.JWT
 }
 
-func NewAuthService(userRepository *user.UserRepository) *AuthService {
+func NewAuthService(userRepository *user.UserRepository, jwt *jwt.JWT) *AuthService {
 	return &AuthService{
 		UserRepository: userRepository,
+		Jwt:            jwt,
 	}
 }
 
@@ -25,6 +28,12 @@ func (service *AuthService) Register(email, name, password string) (string, erro
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+
+	if err != nil {
+		return "", err
+	}
+
+	newJwt, err := service.Jwt.Create(email)
 
 	if err != nil {
 		return "", err
@@ -42,7 +51,7 @@ func (service *AuthService) Register(email, name, password string) (string, erro
 		return "", err
 	}
 
-	return newUser.Email, nil
+	return newJwt, nil
 }
 
 func (service *AuthService) Login(email, password string) (string, error) {
@@ -58,5 +67,11 @@ func (service *AuthService) Login(email, password string) (string, error) {
 		return "", errors.New(ErrUserNotFound)
 	}
 
-	return user.Email, nil
+	newJwt, err := service.Jwt.Create(email)
+
+	if err != nil {
+		return "", err
+	}
+
+	return newJwt, nil
 }

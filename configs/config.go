@@ -31,7 +31,7 @@ func LoadConfig() (*Config, error) {
 			Dsn: os.Getenv("DSN"),
 		},
 		Auth: AuthConfig{
-			Secret: os.Getenv("SECRET"),
+			Secret: os.Getenv("JWT_SECRET"),
 		},
 	}, nil
 }

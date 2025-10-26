@@ -1,15 +1,19 @@
 package auth
 
-type TLoginRequest struct {
+type LoginRequest struct {
 	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required"`
 }
 
-type TRegisterRequest struct {
+type RegisterRequest struct {
 	Name string `json:"name" validate:"required"`
-	*TLoginRequest
+	*LoginRequest
 }
 
-type TLoginResponse struct {
+type LoginResponse struct {
+	Token string `json:"token"`
+}
+
+type RegisterResponse struct {
 	Token string `json:"token"`
 }

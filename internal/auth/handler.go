@@ -1,8 +1,10 @@
 package auth
 
 import (
+	"errors"
 	"net/http"
 	"purpleschool-go/advanced/configs"
+	"purpleschool-go/advanced/pkg/jwt"
 	"purpleschool-go/advanced/pkg/req"
 	"purpleschool-go/advanced/pkg/res"
 )
@@ -30,40 +32,55 @@ func NewAuthHandler(router *http.ServeMux, deps AuthHandlerDeps) {
 
 func (handler *AuthHandler) Register() http.HandlerFunc {
 	return func(rw http.ResponseWriter, request *http.Request) {
-		body, err := req.HandleBody[TRegisterRequest](rw, request)
+		body, err := req.HandleBody[RegisterRequest](rw, request)
 
 		if err != nil {
 			res.Json(rw, http.StatusUnauthorized, err.Error())
 			return
 		}
 
-		userEmail, err := handler.AuthService.Register(body.Email, body.Name, body.Password)
+		newJwt, err := handler.AuthService.Register(body.Email, body.Name, body.Password)
 
 		if err != nil {
 			res.Json(rw, http.StatusUnauthorized, err.Error())
 			return
 		}
 
-		res.Json(rw, 201, userEmail)
+		registerRes := &RegisterResponse{
+			Token: newJwt,
+		}
+
+		res.Json(rw, 201, registerRes)
 	}
 }
 
 func (handler *AuthHandler) Login() http.HandlerFunc {
 	return func(rw http.ResponseWriter, request *http.Request) {
-		body, err := req.HandleBody[TLoginRequest](rw, request)
+		body, err := req.HandleBody[LoginRequest](rw, request)
 
 		if err != nil {
 			res.Json(rw, http.StatusUnauthorized, err.Error())
 			return
 		}
 
-		userEmail, err := handler.AuthService.Login(body.Email, body.Password)
+		token, err := handler.AuthService.Login(body.Email, body.Password)
 
 		if err != nil {
+			var jwtErr *jwt.JwtError
+
+			if errors.As(err, &jwtErr) {
+				res.Json(rw, http.StatusInternalServerError, "internal server error")
+				return
+			}
+
 			res.Json(rw, http.StatusUnauthorized, err.Error())
 			return
 		}
 
-		res.Json(rw, 200, userEmail)
+		loginRes := &LoginResponse{
+			Token: token,
+		}
+
+		res.Json(rw, 200, loginRes)
 	}
 }

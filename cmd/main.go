@@ -9,6 +9,7 @@ import (
 	"purpleschool-go/advanced/internal/user"
 	"purpleschool-go/advanced/middleware"
 	"purpleschool-go/advanced/pkg/db"
+	"purpleschool-go/advanced/pkg/jwt"
 )
 
 func main() {
@@ -19,11 +20,12 @@ func main() {
 	}
 
 	db := db.NewDb(config)
+	jwt := jwt.NewJwt(config.Auth.Secret)
 
 	linkRepository := link.NewLinkRepository(db)
 	userRepository := user.NewUserRepository(db)
 
-	authService := auth.NewAuthService(userRepository)
+	authService := auth.NewAuthService(userRepository, jwt)
 
 	router := http.NewServeMux()
 
