@@ -3,6 +3,8 @@ package link
 import (
 	"errors"
 	"net/http"
+	"purpleschool-go/advanced/middleware"
+	"purpleschool-go/advanced/pkg/jwt"
 	"purpleschool-go/advanced/pkg/req"
 	"purpleschool-go/advanced/pkg/res"
 
@@ -11,6 +13,7 @@ import (
 
 type LinkHandlerDeps struct {
 	Repo *LinkRepository
+	Jwt  *jwt.JWT
 }
 
 type LinkHandler struct {
@@ -27,7 +30,7 @@ func NewLinkHandler(router *http.ServeMux, deps LinkHandlerDeps) {
 	router.HandleFunc("GET "+linkHandler.baseUrl, linkHandler.GetAll())
 	router.HandleFunc("GET "+linkHandler.baseUrl+"/{hash}", linkHandler.GoTo())
 	router.HandleFunc("POST "+linkHandler.baseUrl, linkHandler.Create())
-	router.HandleFunc("PATCH "+linkHandler.baseUrl+"/{id}", linkHandler.Update())
+	router.Handle("PATCH "+linkHandler.baseUrl+"/{id}", middleware.Auth(linkHandler.Update(), deps.Jwt))
 	router.HandleFunc("DELETE "+linkHandler.baseUrl+"/{id}", linkHandler.Delete())
 }
 

@@ -33,7 +33,9 @@ func (service *AuthService) Register(email, name, password string) (string, erro
 		return "", err
 	}
 
-	newJwt, err := service.Jwt.Create(email)
+	newJwt, err := service.Jwt.Create(&jwt.JWTData{
+		Email: email,
+	})
 
 	if err != nil {
 		return "", err
@@ -67,7 +69,9 @@ func (service *AuthService) Login(email, password string) (string, error) {
 		return "", errors.New(ErrUserNotFound)
 	}
 
-	newJwt, err := service.Jwt.Create(email)
+	newJwt, err := service.Jwt.Create(&jwt.JWTData{
+		Email: email,
+	})
 
 	if err != nil {
 		return "", err

@@ -17,6 +17,7 @@ func main() {
 
 	if err != nil {
 		fmt.Println(err.Error())
+		panic(err)
 	}
 
 	db := db.NewDb(config)
@@ -36,11 +37,8 @@ func main() {
 
 	link.NewLinkHandler(router, link.LinkHandlerDeps{
 		Repo: linkRepository,
+		Jwt:  jwt,
 	})
-
-	// 	user.NewLinkHandler(router, link.LinkHandlerDeps{
-	// 	Repo: userRepository,
-	// })
 
 	middlewares := middleware.Chain(
 		middleware.Cors,

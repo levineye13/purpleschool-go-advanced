@@ -6,6 +6,7 @@ type JwtError struct {
 
 const (
 	ErrInvalidSecret = "invalid secret"
+	ErrInvalidToken  = "invalid secret"
 )
 
 func (jwtError *JwtError) Error() string {
