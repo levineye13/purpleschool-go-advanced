@@ -27,16 +27,29 @@ func (repo *LinkRepository) Create(link *Link) (*Link, error) {
 	return link, nil
 }
 
-func (repo *LinkRepository) GetAll() ([]Link, error) {
+func (repo *LinkRepository) GetAll(limit, offset int) []Link {
 	var links []Link
 
-	tx := repo.Database.DB.Find(&links)
+	repo.Database.DB.
+		Table("links").
+		Where("deleted_at is null").
+		Order("id asc").
+		Limit(limit).
+		Offset(offset).
+		Scan(&links)
 
-	if tx.Error != nil {
-		return nil, tx.Error
-	}
+	return links
+}
 
-	return links, nil
+func (repo *LinkRepository) Count() int64 {
+	var count int64
+
+	repo.Database.DB.
+		Table("links").
+		Where("deleted_at is null").
+		Count(&count)
+
+	return count
 }
 
 func (repo *LinkRepository) GetByHash(hash string) (*Link, error) {

@@ -7,6 +7,7 @@ import (
 	"purpleschool-go/advanced/pkg/jwt"
 	"purpleschool-go/advanced/pkg/req"
 	"purpleschool-go/advanced/pkg/res"
+	"strconv"
 
 	"gorm.io/gorm"
 )
@@ -27,7 +28,8 @@ func NewLinkHandler(router *http.ServeMux, deps LinkHandlerDeps) {
 		Repo:    deps.Repo,
 	}
 
-	router.HandleFunc("GET "+linkHandler.baseUrl, linkHandler.GetAll())
+	router.Handle("GET "+linkHandler.baseUrl, middleware.Auth(linkHandler.GetAll(), deps.Jwt))
+	router.Handle("GET "+linkHandler.baseUrl+"/count", middleware.Auth(linkHandler.Count(), deps.Jwt))
 	router.HandleFunc("GET "+linkHandler.baseUrl+"/{hash}", linkHandler.GoTo())
 	router.HandleFunc("POST "+linkHandler.baseUrl, linkHandler.Create())
 	router.Handle("PATCH "+linkHandler.baseUrl+"/{id}", middleware.Auth(linkHandler.Update(), deps.Jwt))
@@ -36,14 +38,25 @@ func NewLinkHandler(router *http.ServeMux, deps LinkHandlerDeps) {
 
 func (handler *LinkHandler) GetAll() http.HandlerFunc {
 	return func(rw http.ResponseWriter, req *http.Request) {
-		links, err := handler.Repo.GetAll()
+		query := req.URL.Query()
+		limit, limitErr := strconv.Atoi(query.Get("limit"))
+		offset, offsetErr := strconv.Atoi(query.Get("offset"))
 
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
+		if limitErr != nil || offsetErr != nil {
+			http.Error(rw, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
 
+		links := handler.Repo.GetAll(limit, offset)
+
 		res.Json(rw, 200, links)
+	}
+}
+
+func (handler *LinkHandler) Count() http.HandlerFunc {
+	return func(rw http.ResponseWriter, req *http.Request) {
+		count := handler.Repo.Count()
+		res.Json(rw, 200, count)
 	}
 }
 
