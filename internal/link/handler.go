@@ -3,6 +3,7 @@ package link
 import (
 	"errors"
 	"net/http"
+	"purpleschool-go/advanced/internal/stat"
 	"purpleschool-go/advanced/middleware"
 	"purpleschool-go/advanced/pkg/jwt"
 	"purpleschool-go/advanced/pkg/req"
@@ -13,19 +14,22 @@ import (
 )
 
 type LinkHandlerDeps struct {
-	Repo *LinkRepository
-	Jwt  *jwt.JWT
+	Repo     *LinkRepository
+	Jwt      *jwt.JWT
+	StatRepo *stat.StatRepository
 }
 
 type LinkHandler struct {
-	baseUrl string
-	Repo    *LinkRepository
+	baseUrl  string
+	Repo     *LinkRepository
+	StatRepo *stat.StatRepository
 }
 
 func NewLinkHandler(router *http.ServeMux, deps LinkHandlerDeps) {
 	linkHandler := &LinkHandler{
-		baseUrl: "/links",
-		Repo:    deps.Repo,
+		baseUrl:  "/links",
+		Repo:     deps.Repo,
+		StatRepo: deps.StatRepo,
 	}
 
 	router.Handle("GET "+linkHandler.baseUrl, middleware.Auth(linkHandler.GetAll(), deps.Jwt))
@@ -75,6 +79,8 @@ func (handler *LinkHandler) GoTo() http.HandlerFunc {
 			http.Error(rw, err.Error(), http.StatusNotFound)
 			return
 		}
+
+		handler.StatRepo.AddClick(link.ID)
 
 		http.Redirect(rw, req, link.Url, http.StatusTemporaryRedirect)
 	}

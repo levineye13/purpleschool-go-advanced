@@ -2,14 +2,16 @@ package link
 
 import (
 	"math/rand"
+	"purpleschool-go/advanced/internal/stat"
 
 	"gorm.io/gorm"
 )
 
 type Link struct {
 	gorm.Model
-	Url  string `json:"link"`
-	Hash string `json:"hash" gorm:"uniqueIndex"`
+	Url   string      `json:"link"`
+	Hash  string      `json:"hash" gorm:"uniqueIndex"`
+	Stats []stat.Stat `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 }
 
 var charset = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
