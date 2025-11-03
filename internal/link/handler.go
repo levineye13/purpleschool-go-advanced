@@ -3,8 +3,8 @@ package link
 import (
 	"errors"
 	"net/http"
-	"purpleschool-go/advanced/internal/stat"
 	"purpleschool-go/advanced/middleware"
+	"purpleschool-go/advanced/pkg/di"
 	"purpleschool-go/advanced/pkg/jwt"
 	"purpleschool-go/advanced/pkg/req"
 	"purpleschool-go/advanced/pkg/res"
@@ -16,13 +16,13 @@ import (
 type LinkHandlerDeps struct {
 	Repo     *LinkRepository
 	Jwt      *jwt.JWT
-	StatRepo *stat.StatRepository
+	StatRepo di.IStatRepository
 }
 
 type LinkHandler struct {
 	baseUrl  string
 	Repo     *LinkRepository
-	StatRepo *stat.StatRepository
+	StatRepo di.IStatRepository
 }
 
 func NewLinkHandler(router *http.ServeMux, deps LinkHandlerDeps) {
