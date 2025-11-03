@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"purpleschool-go/advanced/middleware"
-	"purpleschool-go/advanced/pkg/di"
+	"purpleschool-go/advanced/pkg/event"
 	"purpleschool-go/advanced/pkg/jwt"
 	"purpleschool-go/advanced/pkg/req"
 	"purpleschool-go/advanced/pkg/res"
@@ -16,20 +16,20 @@ import (
 type LinkHandlerDeps struct {
 	Repo     *LinkRepository
 	Jwt      *jwt.JWT
-	StatRepo di.IStatRepository
+	EventBus *event.EventBus
 }
 
 type LinkHandler struct {
 	baseUrl  string
 	Repo     *LinkRepository
-	StatRepo di.IStatRepository
+	EventBus *event.EventBus
 }
 
 func NewLinkHandler(router *http.ServeMux, deps LinkHandlerDeps) {
 	linkHandler := &LinkHandler{
 		baseUrl:  "/links",
 		Repo:     deps.Repo,
-		StatRepo: deps.StatRepo,
+		EventBus: deps.EventBus,
 	}
 
 	router.Handle("GET "+linkHandler.baseUrl, middleware.Auth(linkHandler.GetAll(), deps.Jwt))
@@ -80,7 +80,10 @@ func (handler *LinkHandler) GoTo() http.HandlerFunc {
 			return
 		}
 
-		handler.StatRepo.AddClick(link.ID)
+		handler.EventBus.Publish(event.Event{
+			Type: event.EventLinkVisited,
+			Data: link.ID,
+		})
 
 		http.Redirect(rw, req, link.Url, http.StatusTemporaryRedirect)
 	}
