@@ -1,30 +1,33 @@
 package stat
 
 import (
-	"fmt"
 	"net/http"
+	"purpleschool-go/advanced/pkg/res"
 	"time"
 )
 
 type StatHandlerDeps struct {
-	StatService *StatService
+	StatService    *StatService
+	StatRepository *StatRepository
 }
 
 type StatHandler struct {
-	baseUrl     string
-	StatService *StatService
+	baseUrl        string
+	StatService    *StatService
+	StatRepository *StatRepository
 }
 
 const (
-	FilterDay   = "day"
-	FilterMonth = "month"
-	TimeFormat  = "2006-05-02"
+	GroupByDay   = "day"
+	GroupByMonth = "month"
+	TimeFormat   = "2006-05-02"
 )
 
 func NewStatHandler(router *http.ServeMux, deps StatHandlerDeps) {
 	statHandler := &StatHandler{
-		baseUrl:     "/stat",
-		StatService: deps.StatService,
+		baseUrl:        "/stat",
+		StatService:    deps.StatService,
+		StatRepository: deps.StatRepository,
 	}
 
 	router.Handle("GET "+statHandler.baseUrl, statHandler.GetStat())
@@ -38,11 +41,13 @@ func (handler *StatHandler) GetStat() http.HandlerFunc {
 		to, toErr := time.Parse(TimeFormat, query.Get("to"))
 		by := query.Get("by")
 
-		if (by != FilterDay && by != FilterMonth) || fromErr != nil || toErr != nil {
+		if (by != GroupByDay && by != GroupByMonth) || fromErr != nil || toErr != nil {
 			http.Error(rw, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
 
-		fmt.Println(from, to, by)
+		stats := handler.StatRepository.GetAll(from, to, by)
+
+		res.Json(rw, http.StatusOK, stats)
 	}
 }

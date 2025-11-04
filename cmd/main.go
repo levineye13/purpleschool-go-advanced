@@ -52,7 +52,8 @@ func main() {
 	})
 
 	stat.NewStatHandler(router, stat.StatHandlerDeps{
-		StatService: statService,
+		StatService:    statService,
+		StatRepository: statRepository,
 	})
 
 	middlewares := middleware.Chain(
