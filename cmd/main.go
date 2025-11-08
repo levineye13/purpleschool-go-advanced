@@ -14,8 +14,8 @@ import (
 	"purpleschool-go/advanced/pkg/jwt"
 )
 
-func main() {
-	config, err := configs.LoadConfig()
+func App(mode string) http.Handler {
+	config, err := configs.LoadConfig(mode)
 
 	if err != nil {
 		fmt.Println(err.Error())
@@ -61,12 +61,20 @@ func main() {
 		middleware.Logger,
 	)
 
+	return middlewares(router)
+}
+
+func main() {
+	app := App("dev")
+
 	server := http.Server{
 		Addr:    "localhost:8081",
-		Handler: middlewares(router),
+		Handler: app,
 	}
 
-	err = server.ListenAndServe()
+	defer server.Close()
+
+	err := server.ListenAndServe()
 
 	if err != nil {
 		fmt.Println(err.Error())

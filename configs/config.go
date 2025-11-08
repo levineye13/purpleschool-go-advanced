@@ -19,8 +19,17 @@ type Config struct {
 	Auth AuthConfig
 }
 
-func LoadConfig() (*Config, error) {
-	err := godotenv.Load()
+func LoadConfig(mode string) (*Config, error) {
+	var envPath string
+
+	switch mode {
+	case "test":
+		envPath = "../.env.test"
+	default:
+		envPath = ".env.dev"
+	}
+
+	err := godotenv.Load(envPath)
 
 	if err != nil {
 		return nil, err
